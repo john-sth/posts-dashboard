@@ -1,44 +1,12 @@
-# content-dashboard-posts
+# content-dashboard
 
-This template should help get you started developing with Vue 3 in Vite.
+a content dashboard which fetches data from the https://dummyjson.com API
 
-## Recommended IDE Setup
+## Install and Dependencies
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- for vue cli: npm install -g @vue/cli
+- use axios for api calls, chart.js vue-chartjs for visualization
 
-## Recommended Browser Setup
+## Loading indicator
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+- https://www.digitalocean.com/community/tutorials/add-loading-indicators-to-your-vuejs-application
