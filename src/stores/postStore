@@ -1,0 +1,69 @@
+//=========================================================================================================
+// Module Name: postStore
+//=========================================================================================================
+// Author: Johann Spenrath
+//=========================================================================================================
+// Description:
+//     <Brief overview of what the module does.>
+//     <Key functionalities, algorithms, or data processing performed.>
+//
+// Usage:
+//     <Short example of how to use the module.>
+//
+// Dependencies:
+//     - <dependency1>
+//     - <dependency2>
+//
+//=========================================================================================================
+// Notes:
+//
+//=========================================================================================================
+
+//================================================================
+// component fetches the 10 posts from the API and stores them
+// in the posts array
+//================================================================
+import { defineStore } from 'pinia'
+import axios from 'axios'
+
+export const usePostStore = defineStore('postStore', {
+  state: () => ({
+    // array contains obtained posts from dummyjson api
+    posts: [],
+    // store the users by their id
+    users: {},
+    loading: false,
+    error: false,
+  }),
+  actions: {
+    async fetchPosts() {
+      this.loading = true
+      try {
+        const res = await axios.get('https://dummyjson.com/posts?limit=10')
+        this.posts = res.data.posts || res.data
+      } catch (err) {
+        console.error('Failed to fetch posts:', err)
+        this.error = true
+      } finally {
+        this.loading = false
+      }
+    },
+
+    //===================================
+    // fetch the post by user id
+    //===================================
+    async fetchUser(userId) {
+      // check if the user id has already been fetched
+      if (this.users[userId]) return this.users[userId]
+      try {
+        // fetch data by user id
+        const res = await axios.get(`https://dummyjson.com/users/${userId}`)
+        this.users[userId] = res.data
+        return res.data
+      } catch (err) {
+        console.error('Failed to fetch user:', err)
+        return null
+      }
+    },
+  },
+})
