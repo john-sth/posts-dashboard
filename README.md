@@ -24,4 +24,9 @@ a content dashboard which fetches data from the https://dummyjson.com API
 
 ### Thumbs up/down
 
+- add visual representation of likes and dislikes
+
+- separate main view in all posts and chart for displaying all posts
+-
+
 - https://codepen.io/recodenow/pen/bqpzBE

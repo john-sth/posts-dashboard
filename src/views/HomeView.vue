@@ -24,18 +24,25 @@ import { ref, computed, onMounted } from 'vue'
 import { usePostStore } from '@/stores/postStore'
 import { RouterLink } from 'vue-router'
 // import chart functionality
-import { Chart, registerables } from 'chart.js'
+import { Chart, registerables, Ticks } from 'chart.js'
 Chart.register(...registerables)
 
 const postStore = usePostStore()
 
 //================================================================
-// filter functionality
-// array for multiple selected tags
+// search and filter functionality
 //================================================================
+//=== array for multiple selected tags
 const selectedTags = ref([])
+const dropdownOpenTags = ref(false)
+const dropdownOpenIds = ref(false)
+//=== search after a keyword
 const searchTerm = ref('')
-const dropdownOpen = ref(false)
+//=== filter after user-ids
+const selectedUserIDs = ref([])
+
+let chartInstance = null
+const chartCanvas = ref(null)
 
 //================================================================
 // Data Visualization
@@ -50,8 +57,8 @@ onMounted(async () => {
   //================================================================
   // init Chart
   //================================================================
-  const ctx = document.getElementById('likesChart')
-  new Chart(ctx, {
+  const likeChart = document.getElementById('likesChart')
+  new Chart(likeChart, {
     type: 'bar',
     data: {
       labels: postStore.posts.map((p) => p.title.slice(0, 15) + '...'),
@@ -68,7 +75,35 @@ onMounted(async () => {
         },
       ],
     },
-    options: { responsive: true, plugins: { legend: { position: 'top' } } },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        y: { Ticks: { stepSize: 100 } },
+        x: { Ticks: { stepSize: 100 } },
+      },
+    },
+  })
+
+  const tagChart = chartCanvas.value.getContext('2d')
+  chartInstance = new Chart(tagChart, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(likesPerTag.value),
+      datasets: [
+        {
+          label: 'Total Likes',
+          data: Object.values(likesPerTag.value),
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: true }, stepSize: 400 },
+    },
   })
 })
 
@@ -84,6 +119,42 @@ const allTags = computed(() => {
 })
 
 //================================================================
+// get all user ids from posts
+//================================================================
+const allUserIDs = computed(() => {
+  const userSet = new Set()
+  postStore.posts.forEach((post) => {
+    userSet.add(post.userId)
+  })
+  return Array.from(userSet).sort()
+})
+
+//================================================================
+// map the total numbers of likes/dislikes for each tag
+//================================================================
+
+const likesPerTag = computed(() => {
+  const map = {}
+  postStore.posts.forEach((post) => {
+    post.tags.forEach((tag) => {
+      if (!map[tag]) map[tag] = 0
+      map[tag] += post.reactions.likes
+    })
+  })
+  return map
+})
+
+const dislikesPerTag = computed(() => {
+  const map = {}
+  postStore.posts.forEach((post) => {
+    post.tags.forEach((tag) => {
+      if (!map[tag]) map[tag] = 0
+      map[tag] += post.reactions.dislikes
+    })
+  })
+  return map
+})
+//================================================================
 // filter posts by selected tag
 // filer posts according to the search term in the searchbar
 // allow case insensetive
@@ -96,25 +167,35 @@ const filteredPosts = computed(() => {
     const termMatch = post.title.toLowerCase().includes(searchTerm.value.toLowerCase())
     const tagMatch =
       selectedTags.value.length === 0 || post.tags.some((t) => selectedTags.value.includes(t))
+    const usersMatch =
+      selectedUserIDs.value.length === 0 || selectedUserIDs.value.includes(post.userId)
     const likesMatch = minLikes.value === '' || post.reactions.likes >= parseInt(minLikes.value)
     const dislikesMatch =
       minDislikes.value === '' || post.reactions.dislikes >= parseInt(minDislikes.value)
-    return termMatch && tagMatch && likesMatch && dislikesMatch
+    return termMatch && tagMatch && usersMatch && likesMatch && dislikesMatch
   })
 })
 
 //================================================================
 // Toggle dropdown
 //================================================================
-function toggleDropdown() {
-  dropdownOpen.value = !dropdownOpen.value
+function toggleDropdownTags() {
+  dropdownOpenTags.value = !dropdownOpenTags.value
+}
+
+function toggleDropdownIds() {
+  dropdownOpenIds.value = !dropdownOpenIds.value
 }
 
 //================================================================
-// Clear all selected tags
+// Clear all selected values
 //================================================================
 function clearTags() {
   selectedTags.value = []
+}
+
+function clearUserIds() {
+  selectedUserIDs.value = []
 }
 </script>
 
@@ -124,15 +205,21 @@ function clearTags() {
 
     <!-- Search and Filter Bar-->
     <div class="filter-bar">
-      <input v-model="searchTerm" type="text" placeholder="search posts..." class="search-input" />
+      <input
+        v-model="searchTerm"
+        type="text"
+        placeholder="search for a keyword..."
+        class="search-input"
+      />
 
       <div class="dropdown">
-        <button @click="toggleDropdown" class="dropdown-btn">
+        <button @click="toggleDropdownTags" class="dropdown-btn">
           Tags
           <span v-if="selectedTags.length">({{ selectedTags.length }})</span>
         </button>
 
-        <div v-if="dropdownOpen" class="dropdown-menu">
+        <div v-if="dropdownOpenTags" class="dropdown-menu">
+          <button @click="toggleDropdownTags" class="clear-btn">X</button>
           <button @click="clearTags" class="clear-btn">Clear All</button>
           <label v-for="tag in allTags" :key="tag" class="dropdown-item">
             <input type="checkbox" :value="tag" v-model="selectedTags" />
@@ -140,44 +227,116 @@ function clearTags() {
           </label>
         </div>
       </div>
-    </div>
+      <div class="dropdown">
+        <button @click="toggleDropdownIds" class="dropdown-btn">
+          UserIds
+          <span v-if="selectedUserIDs.length">({{ selectedUserIDs.length }})</span>
+        </button>
 
-    <div v-if="postStore.loading">Loading...</div>
-    <div v-else>
-      <div v-for="post in filteredPosts" :key="post.id" class="post-card">
-        <RouterLink :to="`/post/${post.id}`">
-          <h3 class="post.title">{{ post.title }}</h3>
-        </RouterLink>
-        <p class="post.body">{{ post.body.slice(0, 100) }}...</p>
-        <div class="post-meta">
-          <div class="reactions">
-            <!-- Thumbs up -->
-            <div class="like grow">
-              <i class="fa fa-thumbs-up fa-3x like" aria-hidden="true"></i>
-              <span class="likes"> {{ post.reactions.likes }}</span>
-            </div>
-            <span class="dislikes">
-              <!-- Thumbs down -->
-              <div class="dislike grow">
-                <i class="fa fa-thumbs-down fa-3x like" aria-hidden="true"></i>
-              </div>
-              {{ post.reactions.dislikes }}</span
-            >
-            <span class="tags">
-              <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
-            </span>
-          </div>
-          <div class="comments-count">💬 {{ post.comments?.length || 0 }} comments</div>
-          <!-- Chart -->
-          <canvas class="chart" id="likesChart" style="max-width: 800px; margin-top: 2rem"></canvas>
+        <div v-if="dropdownOpenIds" class="dropdown-menu">
+          <button @click="toggleDropdownIds" class="clear-btn">X</button>
+          <button @click="clearUserIds" class="clear-btn">Clear All</button>
+          <label v-for="id in allUserIDs" :key="id" class="dropdown-item">
+            <input type="checkbox" :value="id" v-model="selectedUserIDs" />
+            {{ id }}
+          </label>
         </div>
       </div>
     </div>
+
+    <div class="split">
+      <div class="left">
+        <div v-if="postStore.loading">Loading...</div>
+        <div v-else>
+          <div v-for="post in filteredPosts" :key="post.id" class="post-card">
+            <h3 class="post.title">{{ post.title }}</h3>
+            <p class="post.body">{{ post.body.slice(0, 100) }}...</p>
+            <div class="post-meta">
+              <div class="reactions">
+                <!-- Thumbs up -->
+                <div class="like grow">
+                  <i class="fa fa-thumbs-up fa-3x like" aria-hidden="true"></i>
+                  <span class="likes"> {{ post.reactions.likes }}</span>
+                </div>
+                <span class="dislikes">
+                  <!-- Thumbs down -->
+                  <div class="dislike grow">
+                    <i class="fa fa-thumbs-down fa-3x like" aria-hidden="true"></i>
+                  </div>
+                  {{ post.reactions.dislikes }}</span
+                >
+                <div></div>
+                <span class="tags"
+                  ><strong>Tags: </strong>
+                  <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
+                </span>
+              </div>
+              <div class="comments-count">💬 {{ post.comments?.length || 0 }} comments</div>
+            </div>
+            <div class="details">
+              <RouterLink :to="`/post/${post.id}`"> Read More </RouterLink>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <h2>Graphs</h2>
+        <div class="chart-wrapper">
+          <canvas
+            class="chart"
+            id="likesChart"
+            style="max-width: 1000px; margin-top: 2rem"
+          ></canvas>
+        </div>
+        <canvas class="chart" ref="chartCanvas" style="max-width: 800px; margin-top: 4rem"></canvas>
+      </div>
+    </div>
+
     <div v-if="postStore.error">Failed to load posts.</div>
   </div>
 </template>
 
 <style scoped>
+.split {
+  display: flex;
+  height: 100vh;
+}
+
+.left {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  /* wrap to the next line */
+  flex-wrap: wrap;
+  justify-content: left;
+  align-items: flex-start;
+  flex-direction: row;
+  min-height: 80vh;
+  margin: 0 auto;
+}
+
+.right {
+  flex: 1;
+  background: #ffffff;
+  padding: 1rem;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  /* wrap children to the next line */
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+li {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 .dashboard {
   max-width: 900px;
   margin: 0 auto;
@@ -205,6 +364,7 @@ function clearTags() {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid #ccc;
+  width: 300px;
 }
 
 .small-input {
@@ -253,16 +413,25 @@ function clearTags() {
 }
 
 .post-card {
-  border: 1px solid #ddd;
+  border: 3px solid #ccc;
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 1.5rem;
   text-align: left;
 }
+.post-card:hover {
+  transform: scale(1.06); /* Increase size on hover */
+  border-color: cadetblue;
+  color: black;
+  background-color: white;
+  /*font-weight: bold; /* Make font bold on hover */
+  z-index: 1;
+}
 
 .post-title {
   color: #0077ff;
   margin-bottom: 0.5rem;
+  font-weight: bold;
 }
 
 .post-meta {
@@ -279,6 +448,14 @@ function clearTags() {
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   text-transform: uppercase;
+}
+.tag:hover {
+  transform: scale(1.2); /* Increase size on hover */
+  border-color: cadetblue;
+  color: white;
+  background-color: #0077ff;
+  /*font-weight: bold; /* Make font bold on hover */
+  z-index: 3;
 }
 
 .chart {
@@ -321,5 +498,21 @@ function clearTags() {
 
 .active {
   color: #2ebdd1;
+}
+
+.details {
+  margin-top: 20px;
+  text-decoration: none;
+}
+a {
+  text-decoration: none;
+}
+a:visited {
+  color: inherit;
+}
+
+.chart-wrapper {
+  max-height: 600px; /* or whatever height you want */
+  overflow-y: auto;
 }
 </style>

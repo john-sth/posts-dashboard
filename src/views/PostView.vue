@@ -34,10 +34,17 @@ onMounted(async () => {
   }
 })
 
+function goBack() {
+  this.$router.go('/')
+}
+
 const post = computed(() => postStore.posts.find((p) => p.id == id))
 </script>
 
 <template>
+  <button class="back-button">
+    <RouterLink :to="`/`"> Back </RouterLink>
+  </button>
   <div>
     <Post :post="post" :loading="postStore.loading" />
   </div>

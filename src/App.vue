@@ -27,7 +27,6 @@
     <main>
       <router-view />
     </main>
-    <footer class="app-footer">© 2025</footer>
   </div>
 </template>
 
@@ -61,7 +60,7 @@ main {
   padding: 1.5rem;
   font-size: 2rem;
   font-weight: bold;
-  text-align: center;
+  text-align: left;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
