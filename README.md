@@ -30,5 +30,10 @@ a content dashboard which fetches data from the https://dummyjson.com API
 - for a quick and easy overview which posts perform well, 2 graphs have been added
 - first graph displays in a bar chart the ratio of dislikes, likes and views for all posts
 - second displays the total likes and dislikes for all tags
+- a table was added for general overview of the details for the posts
+
+### 4. jump to full text with "Read More"
+
+- read more opens the blog post in a separate view, for details and statistics
 
 - https://codepen.io/recodenow/pen/bqpzBE

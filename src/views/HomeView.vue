@@ -10,16 +10,20 @@
 //
 // Usage:
 //
-// Dependencies:
 //
 //=========================================================================================================
 // Notes:
 //
 //=========================================================================================================
-
+// Dependencies:
+//=========================================================================================================
 import { ref, computed, onMounted } from 'vue'
 import { usePostStore } from '@/stores/postStore'
 import { RouterLink } from 'vue-router'
+// add plugin for charts and labels
+import ChartDataLabels from 'chartjs-plugin-datalabels'
+Chart.register(ChartDataLabels)
+
 // import chart functionality
 import { Chart, registerables, Ticks } from 'chart.js'
 Chart.register(...registerables)
@@ -78,11 +82,19 @@ onMounted(async () => {
       ],
     },
     options: {
-      //indexAxis: 'y',
+      indexAxis: 'y',
       responsive: true,
       text: 'Post Performance (Likes / Dislikes / Views)',
       maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom' } },
+      datalabels: {
+        anchor: 'end', // position label at end of bar
+        align: 'right', // align above the bar
+        color: '#000',
+        font: { size: 12, weight: 'bold' },
+        formatter: (value) => value, // display the value
+      },
+
       datasets: {
         bar: {
           barPercentage: 0.3,
@@ -372,12 +384,14 @@ function clearUserIds() {
 </template>
 
 <style scoped>
+* {
+  box-sizing: border-box;
+}
 .split {
   display: flex;
   flex-wrap: wrap;
   width: 100%;
   justify-content: space-between;
-  gap: 1rem;
   align-items: flex-start;
   height: calc(100vh - 160px);
   box-sizing: border-box;
@@ -385,7 +399,7 @@ function clearUserIds() {
 
 .left {
   flex: 1 1 0;
-  margin-left: 5rem;
+  margin-left: 0rem;
   display: block;
   /*display: grid;
   grid-template-columns: repeat(2, 1fr);*/
@@ -396,11 +410,27 @@ function clearUserIds() {
 }
 
 .right {
+  border-radius: 4px;
+  transition:
+    transform 0.6s ease,
+    font-weight 0.6s ease;
+  border: 3px solid #ccc;
   flex: 1 1 0;
+  min-width: 300px;
+  overflow-x: auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: #ffffff;
+}
+
+.right:hover {
+  transform: scale(1.06); /* Increase size on hover */
+  border-color: cadetblue;
+  color: black;
+  background-color: white;
+  /*font-weight: bold; /* Make font bold on hover */
+  z-index: 1;
 }
 
 ul {
@@ -516,7 +546,7 @@ li {
     transform 0.6s ease,
     font-weight 0.6s ease;
   width: 100%;
-  max-width: 500px;
+  max-width: 100%;
 }
 .post-card:hover {
   transform: scale(1.06); /* Increase size on hover */
@@ -614,11 +644,9 @@ a:visited {
 
 .chart-wrapper {
   /*padding: 0.5rem;*/
-  padding-right: 1rem;
-  max-height: 700px;
-  max-width: 800px;
-  overflow-y: auto;
-  height: auto;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
 }
 .chart-canvas {
   width: 90% !important;
@@ -632,6 +660,11 @@ a:visited {
 }
 
 .h1 {
+  text-align: center;
+  display: blog;
+}
+
+.h2 {
   text-align: center;
   display: blog;
 }
