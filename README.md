@@ -8,8 +8,7 @@ a post content dashboard which fetches data from the https://dummyjson.com API
 git clone https://github.com/john-sth/posts-dashboard.git
 cd posts-dashboard
 npm install
-npm run build
-npm run serve
+npm run dev
 ```
 
 ## Dependencies
