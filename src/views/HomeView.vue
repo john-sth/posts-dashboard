@@ -320,30 +320,28 @@ function clearUserIds() {
     </div>
 
     <div class="split">
-      <div class="left">
-        <div v-if="postStore.loading">Loading...</div>
-        <div v-else>
-          <div v-for="(post, index) in filteredPosts" :key="post.id" class="post-card">
-            <h3 class="post.title">{{ index + 1 }}. {{ post.title }}</h3>
-            <p class="post.body">{{ post.body.slice(0, 100) }}...</p>
-            <div class="post-meta">
-              <div class="reactions">
-                <!-- Thumbs up -->
-                <span> 👍 {{ post.reactions.likes }} </span>
-                <!-- Thumbs down -->
-                <span> 👎 {{ post.reactions.dislikes }}</span>
-                <div></div>
-                <span class="tags"
-                  ><strong>Tags: </strong>
-                  <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
-                </span>
-              </div>
+      <div v-if="postStore.loading">Loading...</div>
+      <div v-else>
+        <div v-for="(post, index) in filteredPosts" :key="post.id" class="post-card">
+          <h3 class="post.title">{{ index + 1 }}. {{ post.title }}</h3>
+          <p class="post.body">{{ post.body.slice(0, 100) }}...</p>
+          <div class="post-meta">
+            <div class="reactions">
+              <!-- Thumbs up -->
+              <span> 👍 {{ post.reactions.likes }} </span>
+              <!-- Thumbs down -->
+              <span> 👎 {{ post.reactions.dislikes }}</span>
+              <div></div>
+              <span class="tags"
+                ><strong>Tags: </strong>
+                <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
+              </span>
             </div>
-            <div class="view-count">{{ post.views }} views</div>
-            <div class="comments-count">💬 {{ post.comments }} comments</div>
-            <div class="details">
-              <RouterLink :to="`/post/${post.id}`"> Read More </RouterLink>
-            </div>
+          </div>
+          <div class="view-count">{{ post.views }} views</div>
+          <div class="comments-count">💬 {{ post.comments }} comments</div>
+          <div class="details">
+            <RouterLink :to="`/post/${post.id}`"> Read More </RouterLink>
           </div>
         </div>
       </div>
@@ -391,6 +389,7 @@ function clearUserIds() {
   display: flex;
   flex-wrap: wrap;
   width: 100%;
+  gap: 1.5rem;
   justify-content: space-between;
   align-items: flex-start;
   height: calc(100vh - 160px);
@@ -399,8 +398,10 @@ function clearUserIds() {
 
 .left {
   flex: 1 1 0;
-  margin-left: 0rem;
   display: block;
+  transition:
+    transform 0.6s ease,
+    font-weight 0.6s ease;
   /*display: grid;
   grid-template-columns: repeat(2, 1fr);*/
   gap: 0.5rem;
@@ -589,6 +590,20 @@ li {
   z-index: 3;
 }
 
+.details {
+  background: #2ebdd1;
+  display: inline-block;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  margin-right: 0.3rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.details:hover {
+  background-color: #2ebdd1;
+  color: white;
+}
 .chart {
   margin-top: 2rem;
   min-width: 90%;
