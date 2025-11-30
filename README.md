@@ -1,8 +1,20 @@
 # content-dashboard
 
-a content dashboard which fetches data from the https://dummyjson.com API
+a post content dashboard which fetches data from the https://dummyjson.com API
 
-## Install and Dependencies
+## Installation
+
+git clone https://github.com/john-sth/posts-dashboard.git
+
+```bash
+cd posts-dashboard
+
+npm install
+npm run build
+npm run serve
+```
+
+## Dependencies
 
 - for vue cli: npm install -g @vue/cli
 - use axios for api calls, chart.js vue-chartjs for visualization
@@ -34,6 +46,6 @@ a content dashboard which fetches data from the https://dummyjson.com API
 
 ### 4. jump to full text with "Read More"
 
-- read more opens the blog post in a separate view, for details and statistics
+- "read more" opens the blog post in a separate view, for details and statistics
 
 - https://codepen.io/recodenow/pen/bqpzBE
