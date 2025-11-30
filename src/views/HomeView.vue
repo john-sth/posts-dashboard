@@ -81,7 +81,10 @@ onMounted(async () => {
       plugins: { legend: { position: 'bottom' } },
       scales: {
         y: { Ticks: { stepSize: 100 } },
-        x: { Ticks: { stepSize: 100 } },
+        x: {
+          Ticks: { stepSize: 100 },
+          grid: { display: true, color: 'rgba(0,0,0,0.05)', lineWidth: 1 },
+        },
       },
     },
   })
@@ -90,12 +93,17 @@ onMounted(async () => {
   chartInstance = new Chart(tagChart, {
     type: 'bar',
     data: {
-      labels: Object.keys(likesPerTag.value),
+      labels: Object.keys(likesPerTag.value, dislikesPerTag.value),
       datasets: [
         {
           label: 'Total Likes',
           data: Object.values(likesPerTag.value),
           backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        },
+        {
+          label: 'Total Dislikes',
+          data: Object.values(dislikesPerTag.value),
+          backgroundColor: 'rgba(14, 62, 35, 0.6)',
         },
       ],
     },
@@ -256,22 +264,21 @@ function clearUserIds() {
                 <!-- Thumbs up -->
                 <div class="like grow">
                   <i class="fa fa-thumbs-up fa-3x like" aria-hidden="true"></i>
-                  <span class="likes"> {{ post.reactions.likes }}</span>
+                  <span>{{ post.reactions.likes }}</span>
                 </div>
-                <span class="dislikes">
-                  <!-- Thumbs down -->
-                  <div class="dislike grow">
-                    <i class="fa fa-thumbs-down fa-3x like" aria-hidden="true"></i>
-                  </div>
-                  {{ post.reactions.dislikes }}</span
-                >
+                <!-- Thumbs down -->
+                <div class="dislike grow">
+                  <i class="fa fa-thumbs-down fa-3x like" aria-hidden="true"></i>
+                  <span>{{ post.reactions.dislikes }}</span>
+                </div>
                 <div></div>
                 <span class="tags"
                   ><strong>Tags: </strong>
                   <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
                 </span>
               </div>
-              <div class="comments-count">💬 {{ post.comments?.length || 0 }} comments</div>
+              <div class="view-count">{{ post.views }} views</div>
+              <div class="comments-count">💬 {{ post.comments }} comments</div>
             </div>
             <div class="details">
               <RouterLink :to="`/post/${post.id}`"> Read More </RouterLink>
@@ -364,7 +371,7 @@ li {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid #ccc;
-  width: 300px;
+  width: 500px;
 }
 
 .small-input {
@@ -380,6 +387,18 @@ li {
   border: 1px solid #ccc;
   cursor: pointer;
   background: white;
+}
+.dropdown-btn:hover {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transform: scale(1.06); /* Increase size on hover */
+  border-color: black;
+  color: black;
+  background-color: white;
+  /*font-weight: bold; /* Make font bold on hover */
+  z-index: 1;
 }
 .dropdown-menu {
   position: absolute;
@@ -418,6 +437,11 @@ li {
   padding: 1rem;
   margin-bottom: 1.5rem;
   text-align: left;
+  transition:
+    transform 0.6s ease,
+    font-weight 0.6s ease;
+  width: 80%;
+  max-width: 600px;
 }
 .post-card:hover {
   transform: scale(1.06); /* Increase size on hover */
@@ -446,6 +470,7 @@ li {
   background: #0077ff;
   color: white;
   padding: 0.2rem 0.5rem;
+  margin-right: 0.3rem;
   border-radius: 4px;
   text-transform: uppercase;
 }
