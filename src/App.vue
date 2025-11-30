@@ -5,15 +5,11 @@
 // Author: Johann Spenrath
 //=========================================================================================================
 // Description:
-//     <Brief overview of what the module does.>
-//     <Key functionalities, algorithms, or data processing performed.>
+// - main entry point of the web page
 //
 // Usage:
-//     <Short example of how to use the module.>
 //
 // Dependencies:
-//     - <dependency1>
-//     - <dependency2>
 //
 //=========================================================================================================
 // Notes:
@@ -23,7 +19,10 @@
 
 <template>
   <div class="app-container">
-    <header class="app-header">C4Rocks Dashboard</header>
+    <header class="app-header">
+      C4Rocks Dashboard
+      <RouterLink to="/" class="nav-home">Home</RouterLink>
+    </header>
     <main>
       <router-view />
     </main>
@@ -38,7 +37,7 @@
 /* Main Content */
 main {
   flex: 1;
-  max-width: 1000px;
+  width: 100%;
   margin: 2rem auto;
   padding: 0 1rem;
   background-color: inherit;
@@ -109,6 +108,18 @@ main {
   border-radius: 4px;
   text-transform: uppercase;
   font-size: 0.75rem;
+}
+
+.nav-home {
+  font-size: 1.2rem;
+  text-decoration: none;
+  color: white;
+  font-weight: normal;
+  padding-left: 40px;
+}
+
+.nav-home:hover {
+  text-decoration: none;
 }
 
 /* Responsive tweaks */

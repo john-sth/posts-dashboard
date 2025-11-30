@@ -22,11 +22,13 @@ a content dashboard which fetches data from the https://dummyjson.com API
 
 ### 2. customize the view of the posts
 
-### Thumbs up/down
-
 - add visual representation of likes and dislikes
-
 - separate main view in all posts and chart for displaying all posts
--
+
+### 3. visualize which posts perform well
+
+- for a quick and easy overview which posts perform well, 2 graphs have been added
+- first graph displays in a bar chart the ratio of dislikes, likes and views for all posts
+- second displays the total likes and dislikes for all tags
 
 - https://codepen.io/recodenow/pen/bqpzBE

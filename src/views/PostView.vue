@@ -5,16 +5,13 @@
 // Author: Johann Spenrath
 //=========================================================================================================
 // Description:
-//     <Brief overview of what the module does.>
-//     <Key functionalities, algorithms, or data processing performed.>
+// -
 //
 // Usage:
-//     <Short example of how to use the module.>
+// - display an invidivual page for one post
+//   to see the details of it
 //
 // Dependencies:
-//     - <dependency1>
-//     - <dependency2>
-//
 //=========================================================================================================
 // Notes:
 //
@@ -34,10 +31,6 @@ onMounted(async () => {
   }
 })
 
-function goBack() {
-  this.$router.go('/')
-}
-
 const post = computed(() => postStore.posts.find((p) => p.id == id))
 </script>
 
@@ -45,7 +38,23 @@ const post = computed(() => postStore.posts.find((p) => p.id == id))
   <button class="back-button">
     <RouterLink :to="`/`"> Back </RouterLink>
   </button>
-  <div>
+  <div class="postview-wrapper">
     <Post :post="post" :loading="postStore.loading" />
   </div>
 </template>
+
+<style>
+.postview-wrapper {
+  max-width: 800px;
+  margin: 0 auto; /* centers horizontally */
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.back-button {
+  margin-left: 20rem;
+  padding: 1rem;
+  justify-content: left;
+}
+</style>

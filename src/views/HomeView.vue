@@ -5,15 +5,12 @@
 // Author: Johann Spenrath
 //=========================================================================================================
 // Description:
-//     <Brief overview of what the module does.>
-//     <Key functionalities, algorithms, or data processing performed.>
+// - main Dashboard for displaying and searchin all posts,
+// - visualizes all posts in graphs
 //
 // Usage:
-//     <Short example of how to use the module.>
 //
 // Dependencies:
-//     - <dependency1>
-//     - <dependency2>
 //
 //=========================================================================================================
 // Notes:
@@ -55,13 +52,13 @@ onMounted(async () => {
   await postStore.fetchPosts()
 
   //================================================================
-  // init Chart
+  // init Chart for likes, dislikes and views
   //================================================================
   const likeChart = document.getElementById('likesChart')
   new Chart(likeChart, {
     type: 'bar',
     data: {
-      labels: postStore.posts.map((p) => p.title.slice(0, 15) + '...'),
+      labels: postStore.posts.map((p, index) => index + 1 + '. ' + p.title.slice(0, 5) + '...'),
       datasets: [
         {
           label: 'Likes',
@@ -73,22 +70,67 @@ onMounted(async () => {
           data: postStore.posts.map((p) => p.reactions.dislikes),
           backgroundColor: 'rgba(255, 99, 132, 0.6)',
         },
+        {
+          label: 'Views',
+          data: postStore.posts.map((p) => p.views),
+          backgroundColor: 'rgba(4, 162, 23, 0.6)',
+        },
       ],
     },
     options: {
-      indexAxis: 'y',
+      //indexAxis: 'y',
       responsive: true,
+      text: 'Post Performance (Likes / Dislikes / Views)',
+      maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom' } },
+      datasets: {
+        bar: {
+          barPercentage: 0.3,
+          categoryPercentage: 0.8,
+          maxBarThickness: 10,
+        },
+      },
       scales: {
-        y: { Ticks: { stepSize: 100 } },
+        y: {
+          ticks: {
+            autoSkip: true,
+            maxRotation: 0,
+            minRotation: 0,
+            padding: 12,
+            font: { size: 12 },
+          },
+          title: {
+            display: true,
+            text: 'Posts',
+            font: { size: 16 },
+          },
+        },
         x: {
-          Ticks: { stepSize: 100 },
-          grid: { display: true, color: 'rgba(0,0,0,0.05)', lineWidth: 1 },
+          beginAtZero: true,
+          ticks: {
+            stepSize: 10,
+            maxTicksLimit: 40,
+            maxRotation: 45,
+            minRotation: 45,
+          },
+          title: {
+            display: true,
+            text: 'Count',
+            font: { size: 16 },
+          },
+          grid: {
+            display: true,
+            color: 'rgba(0,0,0,0.05)',
+            lineWidth: 1,
+          },
         },
       },
     },
   })
 
+  //================================================================
+  // Display tags in relation to likes and dislikes
+  //================================================================
   const tagChart = chartCanvas.value.getContext('2d')
   chartInstance = new Chart(tagChart, {
     type: 'bar',
@@ -162,6 +204,20 @@ const dislikesPerTag = computed(() => {
   })
   return map
 })
+
+//================================================================
+// map number of views to post
+//================================================================
+const viewsPerPost = computed(() => {
+  const map = {}
+  postStore.posts.forEach((post) => {
+    post.title.forEach((title) => {
+      if (!map[title]) map[title] = 0
+      map[title] += post.views
+    })
+  })
+  return map
+})
 //================================================================
 // filter posts by selected tag
 // filer posts according to the search term in the searchbar
@@ -208,9 +264,8 @@ function clearUserIds() {
 </script>
 
 <template>
+  <h1 class="dashboard-title">Posts Analytics</h1>
   <div class="dashboard">
-    <h1 dashboard-title>Posts Dashboard</h1>
-
     <!-- Search and Filter Bar-->
     <div class="filter-bar">
       <input
@@ -256,30 +311,24 @@ function clearUserIds() {
       <div class="left">
         <div v-if="postStore.loading">Loading...</div>
         <div v-else>
-          <div v-for="post in filteredPosts" :key="post.id" class="post-card">
-            <h3 class="post.title">{{ post.title }}</h3>
+          <div v-for="(post, index) in filteredPosts" :key="post.id" class="post-card">
+            <h3 class="post.title">{{ index + 1 }}. {{ post.title }}</h3>
             <p class="post.body">{{ post.body.slice(0, 100) }}...</p>
             <div class="post-meta">
               <div class="reactions">
                 <!-- Thumbs up -->
-                <div class="like grow">
-                  <i class="fa fa-thumbs-up fa-3x like" aria-hidden="true"></i>
-                  <span>{{ post.reactions.likes }}</span>
-                </div>
+                <span> 👍 {{ post.reactions.likes }} </span>
                 <!-- Thumbs down -->
-                <div class="dislike grow">
-                  <i class="fa fa-thumbs-down fa-3x like" aria-hidden="true"></i>
-                  <span>{{ post.reactions.dislikes }}</span>
-                </div>
+                <span> 👎 {{ post.reactions.dislikes }}</span>
                 <div></div>
                 <span class="tags"
                   ><strong>Tags: </strong>
                   <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
                 </span>
               </div>
-              <div class="view-count">{{ post.views }} views</div>
-              <div class="comments-count">💬 {{ post.comments }} comments</div>
             </div>
+            <div class="view-count">{{ post.views }} views</div>
+            <div class="comments-count">💬 {{ post.comments }} comments</div>
             <div class="details">
               <RouterLink :to="`/post/${post.id}`"> Read More </RouterLink>
             </div>
@@ -289,13 +338,32 @@ function clearUserIds() {
       <div class="right">
         <h2>Graphs</h2>
         <div class="chart-wrapper">
-          <canvas
-            class="chart"
-            id="likesChart"
-            style="max-width: 1000px; margin-top: 2rem"
-          ></canvas>
+          <canvas class="chart" id="likesChart"></canvas>
         </div>
-        <canvas class="chart" ref="chartCanvas" style="max-width: 800px; margin-top: 4rem"></canvas>
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Likes</th>
+              <th>Dislikes</th>
+              <th>Views</th>
+              <th>Tags</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr v-for="(post, i) in postStore.posts" :key="post.id">
+              <td>{{ i + 1 }}</td>
+              <td>{{ post.title }}</td>
+              <td>{{ post.reactions.likes }}</td>
+              <td>{{ post.reactions.dislikes }}</td>
+              <td>{{ post.views }}</td>
+              <td>{{ post.tags.join(', ') }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <!--<canvas class="chart" ref="chartCanvas"></canvas> -->
       </div>
     </div>
 
@@ -306,26 +374,33 @@ function clearUserIds() {
 <style scoped>
 .split {
   display: flex;
-  height: 100vh;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  height: calc(100vh - 160px);
+  box-sizing: border-box;
 }
 
 .left {
-  flex: 1;
-  padding: 1rem;
-  display: flex;
-  /* wrap to the next line */
-  flex-wrap: wrap;
-  justify-content: left;
-  align-items: flex-start;
-  flex-direction: row;
-  min-height: 80vh;
-  margin: 0 auto;
+  flex: 1 1 0;
+  margin-left: 5rem;
+  display: block;
+  /*display: grid;
+  grid-template-columns: repeat(2, 1fr);*/
+  gap: 0.5rem;
+  align-content: start;
+  overflow-y: auto;
+  padding-right: 1rem;
 }
 
 .right {
-  flex: 1;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: #ffffff;
-  padding: 1rem;
 }
 
 ul {
@@ -345,17 +420,17 @@ li {
   border-radius: 4px;
 }
 .dashboard {
-  max-width: 900px;
-  margin: 0 auto;
-  text-align: center;
+  width: 100%;
+  margin: 0;
   font-family: 'Arial', sans-serif;
   padding: 2rem;
+  flex-direction: column;
 }
 
 .dashboard-title {
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
-  color: #0077ff;
+  text-align: center;
+  margin: 1rem 0 2rem 0;
+  color: black;
 }
 
 .filter-bar {
@@ -430,18 +505,18 @@ li {
   cursor: pointer;
   border-radius: 4px;
 }
-
 .post-card {
   border: 3px solid #ccc;
   border-radius: 6px;
+  box-sizing: border-box;
   padding: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   text-align: left;
   transition:
     transform 0.6s ease,
     font-weight 0.6s ease;
-  width: 80%;
-  max-width: 600px;
+  width: 100%;
+  max-width: 500px;
 }
 .post-card:hover {
   transform: scale(1.06); /* Increase size on hover */
@@ -468,6 +543,7 @@ li {
 
 .tag {
   background: #0077ff;
+
   color: white;
   padding: 0.2rem 0.5rem;
   margin-right: 0.3rem;
@@ -485,7 +561,7 @@ li {
 
 .chart {
   margin-top: 2rem;
-  max-width: 100%;
+  min-width: 90%;
 }
 
 .error {
@@ -537,7 +613,47 @@ a:visited {
 }
 
 .chart-wrapper {
-  max-height: 600px; /* or whatever height you want */
+  /*padding: 0.5rem;*/
+  padding-right: 1rem;
+  max-height: 700px;
+  max-width: 800px;
+  overflow-y: auto;
+  height: auto;
+}
+.chart-canvas {
+  width: 90% !important;
+  height: 700px !important;
+  display: block;
+}
+
+#likesChart {
+  width: 100%;
+  height: 600px;
+}
+
+.h1 {
+  text-align: center;
+  display: blog;
+}
+
+.stats-table {
+  width: 90%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #ccc;
+}
+
+.stats-table tbody tr:hover {
+  background: #f5f5f5;
+}
+
+.stats-table-wrapper {
+  max-height: 500px;
   overflow-y: auto;
 }
 </style>

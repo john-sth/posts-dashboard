@@ -54,7 +54,8 @@ onMounted(async () => {
 })
 
 //==========================
-// d
+// draw a pie chart for
+// like to dislike ratio
 //==========================
 function drawChart() {
   if (!chartCanvas.value) return
@@ -74,7 +75,9 @@ function drawChart() {
     type: 'pie',
     data,
     options: {
-      responsive: true,
+      responsive: false,
+      maintainAspectRatio: true,
+      plugins: { legend: { position: 'bottom' } },
     },
   })
 }
@@ -103,18 +106,21 @@ watch(
     <div class="post-meta">
       <h3>Details:</h3>
       <p><strong>Author:</strong> {{ user?.firstName }} {{ user?.lastName }}</p>
+      <p><strong>User-ID:</strong> {{ post.userId }}</p>
       <div class="reactions">
         <p><strong>Likes:</strong> {{ post.reactions.likes }}</p>
         <p><strong>Dislikes:</strong> {{ post.reactions.dislikes }}</p>
+        <p><strong>Views:</strong> {{ post.views }}</p>
       </div>
       <div class="tags">
         <strong>Tags:</strong>
         <span v-for="tag in post.tags" :key="tag">"{{ tag }}" </span>
       </div>
-      <p><strong>User-ID:</strong> {{ post.userId }}</p>
     </div>
-    <h2>Reactions</h2>
-    <canvas class="chart-pie" ref="chartCanvas" width="50" height="50"></canvas>
+  </div>
+  <h2>Chart</h2>
+  <div>
+    <canvas class="chart-pie" ref="chartCanvas"></canvas>
   </div>
 </template>
 
@@ -135,6 +141,10 @@ watch(
 .post-meta {
   margin-top: 1rem;
   border: 2px #ccc;
+}
+.chart-pie {
+  width: 280px;
+  height: 280px;
 }
 .chart-pie:hover {
   transform: scale(1.06); /* Increase size on hover */
