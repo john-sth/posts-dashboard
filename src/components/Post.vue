@@ -5,19 +5,15 @@
 // Author: Johann Spenrath
 //=========================================================================================================
 // Description:
-//     <Brief overview of what the module does.>
-//     <Key functionalities, algorithms, or data processing performed.>
+// - display the details of a single post, create a pie-chart and provide the full text of the post
 //
-// Usage:
-//     <Short example of how to use the module.>
 //
-// Dependencies:
-//     - <dependency1>
-//     - <dependency2>
 //
 //=========================================================================================================
 // Notes:
 //
+//=========================================================================================================
+// Dependencies:
 //=========================================================================================================
 
 import { ref, onMounted, watch } from 'vue'

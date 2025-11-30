@@ -4,25 +4,19 @@
 // Author: Johann Spenrath
 //=========================================================================================================
 // Description:
-//     <Brief overview of what the module does.>
-//     <Key functionalities, algorithms, or data processing performed.>
-//
+// component fetches the 10 posts from the API and stores them
+// in the posts array
+//================================================================
 // Usage:
 //     <Short example of how to use the module.>
 //
-// Dependencies:
-//     - <dependency1>
-//     - <dependency2>
 //
 //=========================================================================================================
 // Notes:
 //
 //=========================================================================================================
-
-//================================================================
-// component fetches the 10 posts from the API and stores them
-// in the posts array
-//================================================================
+// Dependencies:
+//=========================================================================================================
 import { defineStore } from 'pinia'
 import axios from 'axios'
 

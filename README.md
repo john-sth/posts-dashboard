@@ -2,6 +2,12 @@
 
 a post content dashboard which fetches data from the https://dummyjson.com API
 
+## Usage
+
+- search for keywords in the posts
+- filter after tags and userIDs
+- display details of a single post
+
 ## Installation
 
 ```bash
@@ -15,6 +21,20 @@ npm run dev
 
 - for vue cli: npm install -g @vue/cli
 - use axios for api calls, chart.js vue-chartjs for visualization
+
+## Structure of the Project
+
+```bash
+src/
+├── assets/
+├── components/
+│ ├── HomeView.vue # Main landing UI
+│ ├── PostView.vue # Full view of a selected post
+│ └── Post.vue # Small card displaying a single post
+├── App.vue # Root component
+├── main.js
+└── router.js
+```
 
 ## Loading indicator
 
