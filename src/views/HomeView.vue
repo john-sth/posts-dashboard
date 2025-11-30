@@ -574,7 +574,6 @@ li {
 
 .tag {
   background: #0077ff;
-
   color: white;
   padding: 0.2rem 0.5rem;
   margin-right: 0.3rem;
